@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web Keylogger Detector</title>
+</head>
+<body>
+    <h1>🔍 Web Keylogger Detector</h1>
+    <a href="/test_page1">Test Page 1</a> | <a href="/test_page2">Test Page 2</a>
+    <form action="/clear_logs" method="post">
+        <button type="submit">Clear Logs</button>
+    </form>
+    <h2>Suspicious Logs:</h2>
+    {% if logs %}
+        <ul>
+        {% for log in logs %}
+            <li>{{ log }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>✅ No suspicious activity detected yet.</p>
+    {% endif %}
+</body>
+</html>

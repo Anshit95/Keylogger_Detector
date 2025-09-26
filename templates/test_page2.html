@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page 2</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg,#667eea,#764ba2); color:#fff; }
+        header { background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); color:white; padding:30px; text-align:center; font-size:28px; font-weight:bold; box-shadow:0 6px 20px rgba(0,0,0,0.4); }
+        .container { width:90%; max-width:600px; margin:40px auto; background: rgba(255,255,255,0.05); padding:25px; border-radius:20px; box-shadow:0px 10px 25px rgba(0,0,0,0.4); text-align:center; backdrop-filter: blur(5px);}
+        input[type=text] { width:90%; padding:12px; margin:15px 0; border:1px solid #ddd; border-radius:12px; font-size:16px; }
+        a.page-link { text-decoration:none; color:#50e3c2; font-weight:bold; transition:0.3s; font-size:16px; display:inline-block; margin-top:20px; }
+        a.page-link:hover { color:#fff; text-decoration:underline; }
+    </style>
+</head>
+<body>
+    <header>Test Page 2</header>
+    <div class="container">
+        <input type="text" id="inputBox" placeholder="Type any key...">
+        <br>
+        <a href="{{ url_for('home') }}" class="page-link">Back to Dashboard</a>
+    </div>
+
+    <script>
+        var socket = io();
+        var inputBox = document.getElementById("inputBox");
+
+        inputBox.addEventListener("keydown", function(e){
+            let key = e.key;
+            if(key === " "){ key = "Space"; }
+            if(key === "Enter"){ key = "Enter"; }
+            socket.emit("suspicious_event", { website:"TestPage2", key:key });
+        });
+    </script>
+</body>
+</html>
